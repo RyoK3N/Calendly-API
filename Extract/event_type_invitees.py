@@ -146,13 +146,17 @@ def run(ident: str, days: int = 365) -> None:
             })
 
     # 3️⃣  DataFrame ➜ CSV
+    out_dir = "./data/downloads/"
+    if not os.path.exists(out_dir):
+        os.makedirs(out_dir)
     df = pd.DataFrame(rows)
     print(f"\n👥  Total invitees in window: {df.shape[0]}")
     if not df.empty:
         print(df.head())   # preview
 
     out_file = f"invitees_{et['slug']}.csv"
-    df.to_csv(out_file, index=False)
+    outpath = os.path.join(out_dir,out_file)
+    df.to_csv(outpath, index=False)
     print(f"\nSaved {out_file}")
 
 # ───────────────────── CLI ENTRY-POINT ─────────────────────
