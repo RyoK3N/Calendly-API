@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """
 event_type_invitees.py
 ──────────────────────
