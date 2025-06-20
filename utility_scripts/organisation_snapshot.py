@@ -10,6 +10,8 @@ Quick org overview:
 from __future__ import annotations
 import os, sys, requests
 from urllib.parse import urljoin
+from dotenv import load_dotenv
+load_dotenv()
 
 BASE = "https://api.calendly.com/"
 TOKEN = os.getenv("CALENDLY_API_KEY")
