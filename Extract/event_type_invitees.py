@@ -22,13 +22,17 @@ from urllib.parse import urljoin
 
 import requests
 import pandas as pd
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 # ────────────────────────── CONFIG ──────────────────────────
 BASE          = "https://api.calendly.com/"
 TOKEN         = os.getenv("CALENDLY_API_KEY")          # Personal-access token
 REQUEST_TIMEOUT = 120                                  # seconds per request
 MAX_RETRIES     = 3                                    # per request
-DEFAULT_SLUG    = "cleverly-introduction-cold-email"   # fallback identifier
+DEFAULT_SLUG    = "cleverly-introduction-cold-email-international"   # fallback identifier
 
 HEADERS = {
     "Authorization": f"Bearer {TOKEN or ''}",
@@ -117,7 +121,7 @@ def run(ident: str, days: int = 365) -> None:
     _, org_uri = current_user_and_org()
     et = get_event_type(org_uri, ident)
     if not et:
-        sys.exit(f"❌  No event-type “{ident}” found in this org")
+        sys.exit(f"❌  No event-type \"{ident}\" found in this org")
 
     since_ts = dt.datetime.now(dt.timezone.utc) - dt.timedelta(days=days)
     since_iso = since_ts.isoformat(timespec="seconds")
@@ -136,12 +140,51 @@ def run(ident: str, days: int = 365) -> None:
         ev_uuid = ev["uri"].split("/")[-1]
         for iv in list_invitees(ev_uuid):
             rows.append({
-                "event_uuid":    ev_uuid,
-                "event_start":   ev["start_time"],
-                "status":        iv.get("status"),
-                "invitee_uuid":  iv["uri"].split("/")[-1],
-                "invitee_name":  iv.get("name"),
-                "invitee_email": iv.get("email"),
+                "event_uuid": ev_uuid,
+                "event_start": ev["start_time"],
+                "event_end": iv.get("end_time"),
+                "location": iv.get("location"),
+                "event_created": iv.get("created_at"),
+                "status": iv.get("status"),
+                "canceled_by": iv.get("canceled_by"),
+                "cancellation_reason": iv.get("cancellation_reason"), 
+                "invitee_uuid": iv["uri"].split("/")[-1],
+                "user_name": iv.get("user_name"),
+                "user_email": iv.get("user_email"),
+                "team": iv.get("team"),
+                "invitee_name": iv.get("invitee_name"),
+                "invitee_first_name": iv.get("invitee_first_name"), 
+                "invitee_last_name": iv.get("invitee_last_name"),
+                "invitee_email": iv.get("invitee_email"),
+                "invitee_time_zone": iv.get("invitee_time_zone"),
+                "invitee_accepted_marketing_emails": iv.get("invitee_accepted_marketing_emails"),
+                "text_reminder_number": iv.get("text_reminder_number"),
+                "event_type_name": iv.get("event_type_name"),
+                "question_1": iv.get("question_1"),
+                "response_1": iv.get("response_1"),
+                "question_2": iv.get("question_2"), 
+                "response_2": iv.get("response_2"),
+                "question_3": iv.get("question_3"),
+                "response_3": iv.get("response_3"),
+                "question_4": iv.get("question_4"),
+                "response_4": iv.get("response_4"),
+                "question_5": iv.get("question_5"),
+                "response_5": iv.get("response_5"),
+                "utm_campaign": iv.get("utm_campaign"),
+                "utm_source": iv.get("utm_source"),
+                "utm_medium": iv.get("utm_medium"),
+                "utm_term": iv.get("utm_term"),
+                "utm_content": iv.get("utm_content"),
+                "salesforce_uuid": iv.get("salesforce_uuid"),
+                "event_price": iv.get("event_price"),
+                "payment_currency": iv.get("payment_currency"),
+                "guest_emails": iv.get("guest_emails"),
+                "invitee_reconfirmed": iv.get("invitee_reconfirmed"),
+                "marked_as_no_show": iv.get("marked_as_no_show"),
+                "meeting_notes": iv.get("meeting_notes"),
+                "group": iv.get("group"),
+                "invitee_scheduled_by": iv.get("invitee_scheduled_by"),
+                "scheduling_method": iv.get("scheduling_method")
             })
 
     # 3️⃣  DataFrame ➜ CSV
@@ -167,7 +210,7 @@ if __name__ == "__main__":
                     help="look-back window in days (default 365)")
     args, extra = ap.parse_known_args()
 
-    # grab first positional arg not starting with “-” (Jupyter passes ―f=…)
+    # grab first positional arg not starting with "-" (Jupyter passes ―f=…)
     positional = next((a for a in extra if not a.startswith("-")), None)
 
     ident = args.slug or args.uuid or positional or DEFAULT_SLUG
